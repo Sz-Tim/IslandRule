@@ -121,7 +121,16 @@ dist.df <- data.frame(w=c(start, predStop, final),
                       time=rep(c("Start","Predation Ends", "Final"), 
                                times=c(length(start), length(predStop), length(final))))
 
-###--- Mean w ---### 
+  
+
+  
+  
+##################################
+##########--- GRAPHS ---##########
+##################################  
+
+  
+  ###--- Mean w ---### 
   matplot(1:maxt, mns.postStarve, type="l", col=rgb(0,0,0,0.5), lty=1, 
           ylim=c(0, max(mns.postStarve, na.rm=T)), xlab="Generation", ylab="Mean w post-starve")
     abline(v=predEnd, lty=2)
