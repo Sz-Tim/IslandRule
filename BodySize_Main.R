@@ -11,6 +11,7 @@
   library(plyr)
   library(ggplot2)
   library(MASS)
+  theme_set(theme_bw())
   source(paste0(getwd(), "/BodySize_Funcs.R"))
   source(paste0(getwd(), "/BodySize_SimFunc.R"))
   
@@ -19,7 +20,7 @@
 ###--- Set parameters ---###
 ############################
 
-    sims <- 10
+    sims <- 100
     maxt <- 200
 
     island.pars <- list(isl.r=5,            # Number of rows in island
@@ -30,7 +31,7 @@
                         prod.sd=0)          # sd for productivity per cell per time step
  
     pop.pars <- list(N.init=40,             # Initial population size
-                     w.mean=10,             # Population mean w
+                     w.mean=18,             # Population mean w
                      w.CV=0.03)             # w variance: sd = w.mean*w.CV; initial population and offspring vs parent
 
     move.pars <- list(m=0.5,                # Individual probability of movement
@@ -43,7 +44,7 @@
                       pred.fn="none")       # Predation probability function: none, antilogit, proportional, even, diff
   
     feed.pars <- list(st=0.6,                   # How starvation probability scales with w; how it works depends on feed.fn
-                      feed.fn="even")   # Starvation probability function: antilogit, proportional, outcompete, even
+                      feed.fn="antilogit")   # Starvation probability function: antilogit, proportional, outcompete, even
 
     repro.pars <- list(f=1,                 # How reproductive rate scales with w; how it works depends on repro.fn
                        babybump=1,          # Increase lambda for all individuals; necessary for w < ~5 to avoid fatal errors
@@ -53,13 +54,19 @@
 #############################  
 ###--- Run Simulations ---###
 #############################
-
-  sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
-                       repro.pars, plotIndiv=FALSE)
-  distr.df <- data.frame(w=c(sim.out$distr.ls[[1]], sim.out$distr.ls[[2]]),
-                         time=c(rep("Initial", length(sim.out$distr.ls[[1]] )),
-                                rep("Final", length(sim.out$distr.ls[[2]] )) ))
-  
+  par.seq <- seq(0.1, 2, 0.1)
+  setmeans.df <- data.frame(st=rep(par.seq, each=sims))
+  means <- NULL
+  for(i in par.seq) {
+    feed.pars$st <- i
+    sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
+                         repro.pars, plotIndiv=FALSE)
+    distr.df <- data.frame(w=c(sim.out$distr.ls[[1]], sim.out$distr.ls[[2]]),
+                           time=c(rep("Initial", length(sim.out$distr.ls[[1]] )),
+                                  rep("Final", length(sim.out$distr.ls[[2]] )) ))
+    means <- c(means, sim.out$finalmeans); cat("Finished par set",i,"\n \n")    
+  }
+  setmeans.df$finalmeans <- means
     
 ####################
 ###--- GRAPHS ---###
