@@ -13,6 +13,35 @@
   antilogit <- function(x) {exp(x)/(1+exp(x))}
   # sample(x) uses a vector of elements or, if given an integer, 1:x. To avoid that:
   resample <- function(x,...) {x[sample.int(length(x),...)]}
+
+  makeParSet <- function(par, low, high, len, logSeq=FALSE, sims, maxt) {
+    if(logSeq) { 
+      par.seq <- exp( seq(log(low), log(high), length.out=len) )
+    } else {
+      par.seq <- seq(low, high, length.out=len)
+    }
+    finalmeans.df <- data.frame(p=rep(par.seq, each=sims))
+      names(finalmeans.df) <- par
+    meansByTime.df <- data.frame(time=rep(1:maxt, length(par.seq)), p=rep(par.seq, each=maxt))
+      names(meansByTime.df)[2] <- par
+    return(list(par.seq=par.seq, finalmeans.df=finalmeans.df, meansByTime.df=meansByTime.df, par=par))
+  }
+
+  assignPar <- function(par, value) {
+    if( sum(ls(island.pars)==par) > 0 ) {
+      island.pars[names(island.pars)==par] <<- value
+    } else if( sum(ls(pop.pars)==par) > 0 ) {
+      pop.pars[names(pop.pars)==par] <<- value
+    } else if(sum(ls(move.pars)==par) > 0 ) {
+      move.pars[names(move.pars)==par] <<- value
+    } else if(sum(ls(pred.pars)==par) > 0 ) {
+      pred.pars[names(pred.pars)==par] <<- value
+    } else if(sum(ls(feed.pars)==par) > 0 ) {
+      feed.pars[names(feed.pars)==par] <<- value
+    } else if(sum(ls(repro.pars)==par) > 0 ) {
+      repro.pars[names(repro.pars)==par] <<- value
+    }
+  }
   
   # ALTER THIS FUNCTION
   writeDataAndParams <- function(theData, pars) {

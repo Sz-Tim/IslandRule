@@ -20,7 +20,7 @@
 ###--- Set parameters ---###
 ############################
 
-    sims <- 25
+    sims <- 50
     maxt <- 500
 
     island.pars <- list(isl.r=5,            # Number of rows in island
@@ -31,7 +31,7 @@
                         prod.sd=0)          # sd for productivity per cell per time step
  
     pop.pars <- list(N.init=40,             # Initial population size
-                     w.mean=2,             # Population mean w
+                     w.mean=6,             # Population mean w
                      w.CV=0.03)             # w variance: sd = w.mean*w.CV; initial population and offspring vs parent
 
     move.pars <- list(m=0.5,                # Individual probability of movement
@@ -54,14 +54,13 @@
 #############################  
 ###--- Run Simulations ---###
 #############################
-#  par.seq <- exp(seq(log(0.02),log(15), length.out=15))
-  par.seq <- seq(0.1, 3, length.out=15)
-  finalmeans.df <- data.frame(f=rep(par.seq, each=sims))
-  finalmeans <- NULL
-  meansByTime.df <- data.frame(time=rep(1:maxt, length(par.seq)), f=rep(par.seq, each=maxt))
-  meanWs <- NULL
-  for(i in par.seq) {
-    repro.pars$f <- i
+
+  parSet <- makeParSet(par="st", low=0.01, high=2, len=15, logSeq=FALSE, sims=sims, maxt=maxt)
+  finalmeans.df <- parSet$finalmeans.df;    finalmeans <- NULL
+  meansByTime.df <- parSet$meansByTime.df;     meanWs <- NULL
+
+  for(i in parSet$par.seq) {
+    assignPar(parSet$par, i)
     sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
                          repro.pars, plotIndiv=FALSE)
     distr.df <- data.frame(w=c(sim.out$distr.ls[[1]], sim.out$distr.ls[[2]]),
@@ -69,7 +68,7 @@
                                   rep("Final", length(sim.out$distr.ls[[2]] )) ))
     finalmeans <- c(finalmeans, sim.out$finalmeans)
     meanWs <- c(meanWs, ddply(sim.out$summary.df, .(Time), summarize, MeanW=mean(MeanW.pF))[,2])
-    cat("Finished par set",i,"\n \n")    
+    cat("Finished par set",i,"\n \n")                                  
   }
   finalmeans.df$finalmeans <- finalmeans
   meansByTime.df$meanW <- meanWs
@@ -78,8 +77,8 @@
 ###--- GRAPHS ---###
 ####################  
   ###--- across a parameter ---###
-    ggplot(finalmeans.df, aes(x=f, y=finalmeans)) + geom_point(size=3, alpha=0.5) + ylim(0,11) + labs(x="f", y="Final mean w", title="f")
-    ggplot(meansByTime.df, aes(x=time, y=meanWs, group=f, colour=f)) + geom_line() + ylim(0,16)
+    ggplot(finalmeans.df, aes(x=st, y=finalmeans)) + geom_point(size=3, alpha=0.5) + ylim(0,7) + labs(x="st", y="Final mean w", title="st")
+    ggplot(meansByTime.df, aes(x=time, y=meanWs, group=st, colour=st)) + geom_line() + ylim(0,7)
 
   ###--- mean w ---### 
     ggplot(sim.out$summary.df, aes(x=Time, group=Sim)) + geom_line(aes(y=MeanW.pF)) + geom_line(aes(y=MeanW.pR), colour="red")
