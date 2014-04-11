@@ -1,6 +1,6 @@
-## Theoretical Ecology
-## 2014 Spring
-# Tim Szewczyk
+# Theoretical Ecology
+# 2014 Spring
+### Tim Szewczyk
 
   The ‘Island Rule’ (a.k.a, the ‘Breadbox Rule’ (Bracy Knight, personal communication)) is a well-known ecogeographical pattern where small-bodied species that are isolated on an island tend to become larger than their mainland relatives and large-bodied species tend to become smaller (Foster, 1964; Van Valen, 1973). These changes in body size have been documented most commonly in mammals, including charismatic examples like dwarf mammoths (Vartanyan et al., 1993), dwarf sloths (Anderson & Handley, 2002), giant rodents (Lawlor, 1982), though there is evidence that they also occur in other taxa such as birds (McNab, 1994).
   
