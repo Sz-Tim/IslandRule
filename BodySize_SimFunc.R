@@ -9,7 +9,7 @@
 # - MASS
 
 simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.pars, 
-                      feed.pars, repro.pars, plotIndiv=FALSE, plotLims=c(0,E.mean), alpha=0.02) {
+                      feed.pars, repro.pars, plotIndiv=FALSE, plotAll=FALSE, plotLims=c(0,E.mean), alpha=0.02) {
   
   ###--- UNPACK PARAMETERS ---###
     # Island Parameters
@@ -74,7 +74,7 @@ simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.
   
   
   ###--- PLOT FOR ALL INDIVIDUALS ---###
-    if(plotIndiv) {
+    if(plotIndiv & !plotAll) {
       plot(NA, NA, xlim=c(0,maxt), ylim=plotLims, xlab="Generation", ylab="w")
       if(pred.fn != "none") {
         abline(v=predEnd, lty=2, col="darkred")

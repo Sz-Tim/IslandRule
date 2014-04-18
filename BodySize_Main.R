@@ -7,6 +7,7 @@
 ####################
 ###--- Set Up ---###
 ####################
+  setwd("/Users/fossegrimen/Dropbox/Theoretical Ecology/Project/IslandRule")
   library(truncnorm)
   library(plyr)
   library(ggplot2)
@@ -22,6 +23,7 @@
 
     sims <- 50
     maxt <- 500
+    plotAllSims <- FALSE
 
     island.pars <- list(isl.r=5,            # Number of rows in island
                         isl.c=5,            # Number of columns in island
@@ -32,7 +34,7 @@
  
     pop.pars <- list(N.init=40,             # Initial population size
                      w.mean=0.5,             # Population mean w
-                     w.CV=0.03)             # w variance: sd = w.mean*w.CV; initial population and offspring vs parent
+                     w.CV=0.04)             # w variance: sd = w.mean*w.CV; initial population and offspring vs parent
 
     move.pars <- list(m=0.5,                # Individual probability of movement
                       move.fn="random")     # Which movement function to use
@@ -43,8 +45,8 @@
                       predEnd=300,          # Time step where predation ends
                       pred.fn="none")       # Predation probability function: none, antilogit, proportional, even, diff
   
-    feed.pars <- list(st=0.6,                   # How starvation probability scales with w; how it works depends on feed.fn; max 0.6 for outcompete
-                      feed.fn="outcompete")   # Starvation probability function: antilogit, proportional, outcompete, even
+    feed.pars <- list(st=0.3,                   # How starvation probability scales with w; how it works depends on feed.fn; max 0.6 for outcompete
+                      feed.fn="antilogit")   # Starvation probability function: antilogit, proportional, outcompete, even
 
     repro.pars <- list(f=1,                 # How reproductive rate scales with w; how it works depends on repro.fn
                        babybump=1,          # Increase lambda for all individuals; necessary for w < ~5 to avoid fatal errors
@@ -55,14 +57,17 @@
 ###--- Run Simulations ---###
 #############################
 
-  parSet <- makeParSet(par="st", low=0.01, high=0.6, len=15, logSeq=FALSE, sims=sims, maxt=maxt)
+  parSet <- makeParSet(par="w.mean", low=0.1, high=18, len=8, logSeq=TRUE, sims=sims, maxt=maxt)
   
   finalmeans.df <- parSet$finalmeans.df;    finalmeans <- NULL
   meansByTime.df <- parSet$meansByTime.df;     meanWs <- NULL
+  if(plotAllSims) {
+    plot(NA, NA, xlim=c(0,maxt), ylim=c(0,island.pars$E.mean), xlab="Generation", ylab="w")
+  }
   for(i in parSet$par.seq) {
     assignPar(parSet$par, i)
     sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
-                         repro.pars, plotIndiv=FALSE)
+                         repro.pars, plotIndiv=FALSE, plotAll=plotAllSims)
     distr.df <- data.frame(w=c(sim.out$distr.ls[[1]], sim.out$distr.ls[[2]]),
                            time=c( rep("Initial", length(sim.out$distr.ls[[1]])),
                                    rep("Final", length(sim.out$distr.ls[[2]])) ))
@@ -77,8 +82,8 @@
 ###--- GRAPHS ---###
 ####################  
   ###--- across a parameter ---###
-    ggplot(finalmeans.df, aes(x=st, y=finalmeans)) + geom_point(size=3, alpha=0.5) + ylim(0,70) + labs(x="st", y="Final mean w", title="st")
-    ggplot(meansByTime.df, aes(x=time, y=meanWs, group=st, colour=st)) + geom_line() + ylim(0,40)
+    ggplot(finalmeans.df, aes(x=w.mean, y=finalmeans)) + geom_point(size=3, alpha=0.5) + ylim(0,20) + labs(x="Initial w", y="Final mean w", title="w")
+    ggplot(meansByTime.df, aes(x=time, y=meanWs, group=w.mean, colour=w.mean)) + geom_line() + ylim(0,20)
 
   ###--- mean w ---### 
     ggplot(sim.out$summary.df, aes(x=Time, group=Sim)) + geom_line(aes(y=MeanW.pF)) + geom_line(aes(y=MeanW.pR), colour="red")
