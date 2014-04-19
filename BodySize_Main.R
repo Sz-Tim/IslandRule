@@ -8,13 +8,15 @@
 ###--- Set Up ---###
 ####################
   setwd("/Users/fossegrimen/Dropbox/Theoretical Ecology/Project/IslandRule")
+  baseDir <- getwd()
   library(truncnorm)
   library(plyr)
   library(ggplot2)
   library(MASS)
   theme_set(theme_bw())
-  source(paste0(getwd(), "/BodySize_Funcs.R"))
-  source(paste0(getwd(), "/BodySize_SimFunc.R"))
+  source(paste0(baseDir, "/BodySize_Funcs.R"))
+  source(paste0(baseDir, "/BodySize_GenFuncs.R"))
+  source(paste0(baseDir, "/BodySize_SimFunc.R"))
   
 
 ############################  
@@ -24,6 +26,7 @@
     sims <- 50
     maxt <- 500
     plotAllSims <- FALSE
+    writeSims <- TRUE
 
     island.pars <- list(isl.r=5,            # Number of rows in island
                         isl.c=5,            # Number of columns in island
@@ -57,33 +60,42 @@
 ###--- Run Simulations ---###
 #############################
 
-  parSet <- makeParSet(par="w.mean", low=0.1, high=18, len=8, logSeq=TRUE, sims=sims, maxt=maxt)
-  
-  finalmeans.df <- parSet$finalmeans.df;    finalmeans <- NULL
-  meansByTime.df <- parSet$meansByTime.df;     meanWs <- NULL
+  parSet <- makeParSet(param="w.mean", low=1, high=18, len=5, logSeq=TRUE, sims=sims, maxt=maxt)
+  dirNum <- 1
+
   if(plotAllSims) {
     plot(NA, NA, xlim=c(0,maxt), ylim=c(0,island.pars$E.mean), xlab="Generation", ylab="w")
   }
+  
   for(i in parSet$par.seq) {
-    assignPar(parSet$par, i)
-    sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
-                         repro.pars, plotIndiv=FALSE, plotAll=plotAllSims)
-    distr.df <- data.frame(w=c(sim.out$distr.ls[[1]], sim.out$distr.ls[[2]]),
-                           time=c( rep("Initial", length(sim.out$distr.ls[[1]])),
-                                   rep("Final", length(sim.out$distr.ls[[2]])) ))
-    finalmeans <- c(finalmeans, sim.out$finalmeans)
-    meanWs <- c(meanWs, ddply(sim.out$summary.df, .(Time), summarize, MeanW=mean(MeanW.pF))[,2])
+
+    # Set parameters
+      assignPar(parSet$param, i)
+
+    # Run simulations  
+      sim.out <- simIsland(sims, maxt, island.pars, pop.pars, move.pars, pred.pars, feed.pars, 
+                           repro.pars, plotIndiv=FALSE, plotAll=plotAllSims)
+    
+    # Write data to files
+      if(writeSims) {
+        writeDataAndParsToFile(sim.out$summary.df, parSet$param, dirNum, island.pars, pop.pars, move.pars, pred.pars, feed.pars, repro.pars)
+        writeDistrToFile(sim.out$distr.ls, parSet$param, dirNum)
+        dirNum <- dirNum + 1
+      }
     cat("Finished par set",i,"\n \n")                                  
   }
-  finalmeans.df$finalmeans <- finalmeans
-  meansByTime.df$meanW <- meanWs
+
     
 ####################
 ###--- GRAPHS ---###
-####################  
+####################
+
+    summary.df <- getSummary(feedFunc=feed.pars$feed.fn, param=parSet$param, indices=1:sims)
+    byTime.df <- getSimsByTime(feedFunc=feed.pars$feed.fn, param=parSet$param, indices=1:sims)
+    
   ###--- across a parameter ---###
-    ggplot(finalmeans.df, aes(x=w.mean, y=finalmeans)) + geom_point(size=3, alpha=0.5) + ylim(0,20) + labs(x="Initial w", y="Final mean w", title="w")
-    ggplot(meansByTime.df, aes(x=time, y=meanWs, group=w.mean, colour=w.mean)) + geom_line() + ylim(0,20)
+    ggplot(summary.df, aes(x=w.mean, y=MeanW.pF)) + geom_point(size=3, alpha=0.5) + ylim(0,20) + labs(x="Initial w", y="Final mean w", title="w")
+    ggplot(byTime.df, aes(x=time, y=MeanW.pF, group=w.mean, colour=w.mean)) + geom_line() + ylim(0,20)
 
   ###--- mean w ---### 
     ggplot(sim.out$summary.df, aes(x=Time, group=Sim)) + geom_line(aes(y=MeanW.pF)) + geom_line(aes(y=MeanW.pR), colour="red")
