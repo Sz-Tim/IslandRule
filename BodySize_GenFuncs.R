@@ -73,7 +73,7 @@
     fname <- paste0(basedir, rundir, "/SummaryOut.txt")
     
   # Write dataframe
-    write.matrix(dataframe, file=fname)
+    write.table(dataframe, file=fname, row.names=FALSE)
 	
 	# Generate filename for parameters
 		fname <- paste0(basedir, rundir, "/parameters.R")
