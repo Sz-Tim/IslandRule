@@ -149,7 +149,7 @@
   reproduce <- function(N.df=N.df, w.CV=w.CV, f=f, babybump=0, fn="proportional") {
     
     if(fn == "proportional") {
-      lam <- N.df$w*f
+      lam <- N.df$w*f + babybump
       
     } else if(fn == "log") {
       lam <- log(N.df$w + 1)*f + babybump
@@ -171,8 +171,12 @@
 ###--- Productivity Functions ---###
 ####################################
 
-  grow <- function(E=E, MN=prod.mean, SD=prod.sd) {
-    E <- E + rnorm(prod(dim(E)), MN, SD)
+  grow <- function(E=E, MN=prod.mean, SD=prod.sd, incComp=incComp, incComp.time=incComp.time, t=t) {
+    if(t < incComp.time) {
+      E <- E + rnorm(prod(dim(E)), MN, SD)
+    } else {
+      E <- E + rnorm(prod(dim(E)), incComp, SD)
+    }
     return(E)
   }
   

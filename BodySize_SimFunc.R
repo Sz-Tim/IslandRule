@@ -19,6 +19,8 @@ simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.
     E.sd <- island.pars$E.sd             # sd for initial resource level per cell
     prod.mean <- island.pars$prod.mean   # Mean productivity per cell per time step
     prod.sd <- island.pars$prod.sd       # sd for productivity per cell per time step
+    incComp <- island.pars$incComp       # Mean productivity after competition is increased
+    incComp.time <- island.pars$incComp.time  # Time step to increase competition
     
     # Population Parameters
     N.init <- pop.pars$N.init            # Initial population size
@@ -59,6 +61,7 @@ simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.
     summary.df <- data.frame(Sim=rep(1:sims, each=maxt),
                     Time=rep(1:maxt, sims),
                     MeanW.pF=numeric(sims*maxt),
+                    VarW.pF=numeric(sims*maxt),
                     MeanW.pR=numeric(sims*maxt),
                     SumW.pF=numeric(sims*maxt),
                     SumW.pR=numeric(sims*maxt),
@@ -79,6 +82,7 @@ simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.
       if(pred.fn != "none") {
         abline(v=predEnd, lty=2, col="darkred")
       }
+      abline(v=incComp.time, lty=2, col="darkblue")
     }
   
   
@@ -108,19 +112,24 @@ simIsland <- function(sims=10, maxt=100, island.pars, pop.pars, move.pars, pred.
           E <- feedout$E
         
         ## Store post-feed summary statistics, plot all individuals ##
-          summary.df[step, c(3, 5, 7)] <- c(mean(N.df$w), sum(N.df$w), nrow(N.df))
+          summary.df[step, c(3, 4, 6, 8)] <- c(mean(N.df$w), var(N.df$w), sum(N.df$w), nrow(N.df))
           if(plotIndiv) {
-            points(rep(t, nrow(N.df)), N.df$w, col=rgb(0,0,0,alpha), cex=0.2)
+            if(nrow(N.df) > 100) {
+              N.plot <- N.df[sample(1:nrow(N.df), 100, replace=FALSE),]
+            } else {
+              N.plot <- N.df
+            }
+            points(rep(t, nrow(N.plot)), N.plot$w, col=rgb(0,0,0,alpha), cex=0.2)
           }
         
         ## Reproduction ##
           N.df <- reproduce(N.df=N.df, w.CV=w.CV, f=f, babybump=babybump, fn=repro.fn)
         
         ## Store post-reproduction summary statistics ##
-          summary.df[step, c(4, 6, 8)] <- c(mean(N.df$w), sum(N.df$w), nrow(N.df))
+          summary.df[step, c(5, 7, 9)] <- c(mean(N.df$w), sum(N.df$w), nrow(N.df))
         
         ## Landscape regeneration ##
-          E <- grow(E=E, MN=prod.mean, SD=prod.sd)
+          E <- grow(E=E, MN=prod.mean, SD=prod.sd, incComp=incComp, incComp.time=incComp.time, t=t)
         
         ## Progress Update ##
           if(t%%25 == 0) {
