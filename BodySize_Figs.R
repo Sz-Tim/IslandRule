@@ -9,7 +9,7 @@
 ####################
 setwd("~/Dropbox/Theoretical Ecology/Project/IslandRule")
 baseDir <- getwd()
-library(truncnorm); library(plyr); library(ggplot2); library(MASS)
+library(truncnorm); library(plyr); library(ggplot2); library(MASS); library(gridExtra)
 theme_set(theme_bw())
 source(paste0(baseDir, "/BodySize_Funcs.R"))
 source(paste0(baseDir, "/BodySize_GenFuncs.R"))
@@ -116,31 +116,35 @@ prop.df <- getSimsByTime(feedFunc="proportional", param="st", indices=1:8)
 even.df <- getSimsByTime(feedFunc="even", param="st", indices=1)
 outcomp.df <- getSimsByTime(feedFunc="outcompete", param="st", indices=1:7)
 
-ggplot(alog.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W") 
-ggplot(prop.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W")
-ggplot(even.df, aes(x=time, y=MeanW.pF, colour=st)) + geom_line() + ylim(0,30) + labs(y="Mean W")
-ggplot(outcomp.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W")
+alog.g <- ggplot(alog.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W") 
+prop.g <- ggplot(prop.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W")
+even.g <- ggplot(even.df, aes(x=time, y=MeanW.pF, colour=st)) + geom_line() + ylim(0,30) + labs(y="Mean W")
+outcomp.g <- ggplot(outcomp.df, aes(x=time, group=st, colour=st, y=MeanW.pF)) + geom_line() + ylim(0,30) + labs(y="Mean W")
+
+grid.arrange(alog.g, prop.g, even.g, outcomp.g, ncol=2, nrow=2)
 
 
 ##########################################
 ### plots of w.mean with w.init varied ###
 ##########################################
 w.mean.df <- subset(summary.df, is.na(summary.df$incComp) & summary.df$st==0.3 & summary.df$m==0.5 & summary.df$isl.r==5)
-ggplot(w.mean.df, aes(x=w.mean, y=MeanW.pF, colour=feed.fn)) + geom_point(size=3) + labs(y="Mean W")
+ggplot(w.mean.df, aes(x=w.mean, y=MeanW.pF, colour=feed.fn)) + geom_point(size=3) + labs(y="Mean W", x="w.init")
 
 alog.df <- getSimsByTime(feedFunc="antilogit", param="w.mean", indices=1:8)
 prop.df <- getSimsByTime(feedFunc="proportional", param="w.mean", indices=1:8)
 even.df <- getSimsByTime(feedFunc="even", param="w.mean", indices=1:8)
 outcomp.df <- getSimsByTime(feedFunc="outcompete", param="w.mean", indices=1:8)
 
-ggplot(alog.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
+alog.g <- ggplot(alog.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
   labs(y="Mean W") + scale_colour_gradient(name="W.init")
-ggplot(prop.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
+prop.g <- ggplot(prop.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
   labs(y="Mean W") + scale_colour_gradient(name="W.init")
-ggplot(even.df, aes(x=time, y=MeanW.pF, group=w.mean, colour=w.mean)) + geom_line() + ylim(0,20) + 
+even.g <- ggplot(even.df, aes(x=time, y=MeanW.pF, group=w.mean, colour=w.mean)) + geom_line() + ylim(0,20) + 
   labs(y="Mean W") + scale_colour_gradient(name="W.init")
-ggplot(outcomp.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
+outcomp.g <- ggplot(outcomp.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_line() + ylim(0,20) + 
   labs(y="Mean W") + scale_colour_gradient(name="W.init")
+
+grid.arrange(alog.g, prop.g, even.g, outcomp.g, ncol=2, nrow=2)
 
 
 
@@ -149,18 +153,119 @@ ggplot(outcomp.df, aes(x=time, group=w.mean, colour=w.mean, y=MeanW.pF)) + geom_
 ###########################################
 incComp.df <- subset(summary.df, is.na(summary.df$incComp)==FALSE)
 ggplot(incComp.df, aes(x=incComp, y=MeanW.pF, colour=feed.fn)) + geom_vline(x=20, linetype=2, colour="gray70") + 
-  geom_point(size=3) + labs(y="Mean W")
+  geom_point(size=3) + labs(y="Mean W", x="Productivity")
+ggplot(incComp.df, aes(x=incComp, y=VarW.pF, colour=feed.fn)) + geom_vline(x=20, linetype=2, colour="gray70") +
+  geom_point(size=3) + labs(y="Variance in w", x="Productivity")
+ggplot(incComp.df, aes(x=MeanW.pF, y=sqrt(VarW.pF), colour=feed.fn)) + geom_point(aes(size=incComp), alpha=0.75) + 
+  labs(y="Standard deviation in W", x="Mean W")
 
 alog.df <- getSimsByTime(feedFunc="antilogit", param="incComp", indices=1:8)
 prop.df <- getSimsByTime(feedFunc="proportional", param="incComp", indices=1:8)
 even.df <- getSimsByTime(feedFunc="even", param="incComp", indices=1:8)
 outcomp.df <- getSimsByTime(feedFunc="outcompete", param="incComp", indices=1:8)
 
-ggplot(alog.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
+alog.g <- ggplot(alog.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
   labs(y="Mean W") + scale_colour_gradient(name="Productivity")
-ggplot(prop.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
+prop.g <- ggplot(prop.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
   labs(y="Mean W") + scale_colour_gradient(name="Productivity")
-ggplot(even.df, aes(x=time, y=MeanW.pF, group=incComp, colour=incComp)) + geom_line() + ylim(0,40) + 
+even.g <- ggplot(even.df, aes(x=time, y=MeanW.pF, group=incComp, colour=incComp)) + geom_line() + ylim(0,40) + 
   labs(y="Mean W") + scale_colour_gradient(name="Productivity")
-ggplot(outcomp.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
+outcomp.g <- ggplot(outcomp.df, aes(x=time, group=incComp, colour=incComp, y=MeanW.pF)) + geom_line() + ylim(0,40) + 
   labs(y="Mean W") + scale_colour_gradient(name="Productivity")
+
+grid.arrange(alog.g, prop.g, even.g, outcomp.g, ncol=2, nrow=2)
+
+ggplot(alog.df, aes(x=time, group=incComp, colour=incComp, y=sqrt(VarW.pF))) + geom_line() + ylim(0,7) +
+  labs(y="Standard deviation in W") + scale_colour_gradient(name="Productivity")
+ggplot(prop.df, aes(x=time, group=incComp, colour=incComp, y=sqrt(VarW.pF))) + geom_line() + ylim(0,7) + 
+  labs(y="Standard deviation in W") + scale_colour_gradient(name="Productivity")
+ggplot(even.df, aes(x=time, y=sqrt(VarW.pF), group=incComp, colour=incComp)) + geom_line() + ylim(0,7) + 
+  labs(y="Standard deviation in W") + scale_colour_gradient(name="Productivity")
+ggplot(outcomp.df, aes(x=time, group=incComp, colour=incComp, y=sqrt(VarW.pF))) + geom_line() + ylim(0,7) + 
+  labs(y="Standard deviation in W") + scale_colour_gradient(name="Productivity")
+
+
+
+#####################################
+### plots of w.mean with f varied ###
+#####################################
+f.df <- subset(summary.df, summary.df$f!=1 & summary.df$st==0.3 & summary.df$m==0.5 & summary.df$isl.r==5 & summary.df$w.mean==0.5)
+ggplot(f.df, aes(x=f, y=MeanW.pF, colour=feed.fn)) + geom_point(size=3) + labs(y="Mean W", x="f")
+
+alog.df <- getSimsByTime(feedFunc="antilogit", param="f", indices=1:8)
+prop.df <- getSimsByTime(feedFunc="proportional", param="f", indices=1:8)
+even.df <- getSimsByTime(feedFunc="even", param="f", indices=1:8)
+outcomp.df <- getSimsByTime(feedFunc="outcompete", param="f", indices=1:8)
+
+alog.g <- ggplot(alog.df, aes(x=time, group=f, colour=f, y=MeanW.pF)) + geom_line() + ylim(0,21) + 
+  labs(y="Mean W") + scale_colour_gradient(name="f")
+prop.g <- ggplot(prop.df, aes(x=time, group=f, colour=f, y=MeanW.pF)) + geom_line() + ylim(0,21) + 
+  labs(y="Mean W") + scale_colour_gradient(name="f")
+even.g <- ggplot(even.df, aes(x=time, y=MeanW.pF, group=f, colour=f)) + geom_line() + ylim(0,21) + 
+  labs(y="Mean W") + scale_colour_gradient(name="f")
+outcomp.g <- ggplot(outcomp.df, aes(x=time, group=f, colour=f, y=MeanW.pF)) + geom_line() + ylim(0,21) + 
+  labs(y="Mean W") + scale_colour_gradient(name="f")
+
+grid.arrange(alog.g, prop.g, even.g, outcomp.g, ncol=2, nrow=2)
+
+
+
+
+################################
+### plots of w distributions ###
+################################
+# w.mean
+  wInit.distr <- subset(init.distr, is.na(init.distr$incComp) & init.distr$st==0.3 & init.distr$m==0.5 & init.distr$isl.r==5)
+  wFinal.distr <- subset(final.distr, is.na(final.distr$incComp) & final.distr$st==0.3 & final.distr$m==0.5 & final.distr$isl.r==5)
+
+  ggplot(wFinal.distr, aes(x=w, colour=factor(w.mean))) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="Mean w.init", type="seq", palette=4) + labs(x="Final w")
+  ggplot(wInit.distr, aes(x=w, colour=factor(w.mean))) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="Mean w.init", type="seq", palette=4) + labs(x="Initial w")
+
+
+# st
+  stInit.distr <- subset(init.distr, is.na(init.distr$incComp) & init.distr$w.mean==1 & init.distr$m==0.5 & init.distr$isl.r==5)
+  stFinal.distr <- subset(final.distr, is.na(final.distr$incComp) & final.distr$w.mean==1 & final.distr$m==0.5 & final.distr$isl.r==5)
+
+  ggplot(stFinal.distr, aes(x=w, colour=factor(st))) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="st", type="seq", palette=4) + labs(x="Final w")
+  ggplot(stInit.distr, aes(x=w, colour=factor(st))) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="st", type="seq", palette=4) + labs(x="Initial w")
+
+
+# incComp
+  incCompInit.distr <- subset(init.distr, is.na(init.distr$incComp)==FALSE)
+  incCompFinal.distr <- subset(final.distr, is.na(final.distr$incComp)==FALSE)
+  incCompInit.distr$compFac <- factor(incCompInit.distr$incComp)
+  levels(incCompInit.distr$compFac)[3:4] <- "15"
+  levels(incCompInit.distr$compFac)[4:5] <- "20"
+  levels(incCompInit.distr$compFac)[5:6] <- "25"
+  levels(incCompInit.distr$compFac)[6:7] <- "30"
+  levels(incCompInit.distr$compFac)[7:8] <- "35"
+  levels(incCompInit.distr$compFac)[8:9] <- "40"
+  incCompFinal.distr$compFac <- factor(incCompFinal.distr$incComp)
+  levels(incCompFinal.distr$compFac)[3:4] <- "15"
+  levels(incCompFinal.distr$compFac)[4:5] <- "20"
+  levels(incCompFinal.distr$compFac)[5:6] <- "25"
+  levels(incCompFinal.distr$compFac)[6:7] <- "30"
+  levels(incCompFinal.distr$compFac)[7:8] <- "35"
+  levels(incCompFinal.distr$compFac)[8:9] <- "40"
+  
+
+  ggplot(incCompFinal.distr, aes(x=w, colour=compFac)) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="Productivity", type="seq", palette=4) + labs(x="Final w")
+  ggplot(incCompInit.distr, aes(x=w, colour=compFac)) + geom_density(trim=TRUE) + facet_wrap(~feed.fn) + 
+    scale_colour_brewer(name="Productivity", type="seq", palette=4) + labs(x="Initial w")
+
+
+
+
+
+
+
+
+
+
+
+

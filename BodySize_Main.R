@@ -24,7 +24,7 @@
 ############################
 
     sims <- 50
-    maxt <- 1000
+    maxt <- 500
     parLen <- 8
     plotAllSims <- FALSE
     writeSims <- TRUE
@@ -52,7 +52,7 @@
                       pred.fn="none")       # Predation probability function: none, antilogit, proportional, even, diff
   
     feed.pars <- list(st=0.3,                   # How starvation probability scales with w; how it works depends on feed.fn; max 0.6 for outcompete
-                      feed.fn="even")   # Starvation probability function: antilogit, proportional, outcompete, even
+                      feed.fn="proportional")   # Starvation probability function: antilogit, proportional, outcompete, even
 
     repro.pars <- list(f=1,                 # How reproductive rate scales with w; how it works depends on repro.fn
                        babybump=1,          # Increase lambda for all individuals; necessary for w < ~5 to avoid fatal errors
@@ -64,9 +64,11 @@
 ###--- Run Simulations ---###
 #############################
 
-  parSet <- makeParSet(param="incComp", low=5, high=40, len=parLen, logSeq=FALSE, sims=sims, maxt=maxt)
+  # Select parameter to vary across simulation sets:
+  parSet <- makeParSet(param="f", low=0.5, high=3, len=parLen, logSeq=FALSE, sims=sims, maxt=maxt)
+  
+  # Run simulations
   dirNum <- 1
-
   if(plotAllSims) {
     plot(NA, NA, xlim=c(0,maxt), ylim=c(0,island.pars$E.mean), xlab="Generation", ylab="w")
   }

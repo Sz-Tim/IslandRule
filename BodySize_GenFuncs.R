@@ -476,7 +476,7 @@
         prod.mean <- c(prod.mean, rep(island.pars$prod.mean,l))
         prod.sd <- c(prod.sd, rep(island.pars$prod.sd,l))
         incComp <- c(incComp, rep(island.pars$incComp,l))
-        incComp.time <- c(incComp, rep(island.pars$incComp.time,l))
+        incComp.time <- c(incComp.time, rep(island.pars$incComp.time,l))
         n.init <- c(n.init, rep(pop.pars$N.init,l))
         w.mean <- c(w.mean, rep(pop.pars$w.mean,l))
         w.CV <- c(w.CV, rep(pop.pars$w.CV,l))
